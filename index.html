@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>CSSToReactStyles</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-155743848-1"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "UA-155743848-1");
+    </script>
+  </head>
+  <body>
+    <h3 style="font-family: Arial, Helvetica, sans-serif;">
+      CSS To React Style Converter
+    </h3>
+    <div style="width: 100%;display: flex;flex :1">
+      <div style="flex : 1;height:450px">
+        <textarea
+          placeholder="Click here to convert styled-component styles to css"
+          id="css"
+          style="flex:1;width: 98%;height : 100%"
+        ></textarea>
+      </div>
+      <div style="flex : 1;height:450px">
+        <textarea
+          placeholder="Click here to convert css styles to styled-component styles"
+          id="style"
+          style="flex:1;width: 98%;height : 100%"
+        ></textarea>
+      </div>
+    </div>
+
+    <script>
+      const a = document.querySelector("#css");
+      const b = document.querySelector("#style");
+
+      a.addEventListener("click", () => {
+        if (b.value === "") {
+          return;
+        }
+
+        let content = b.value;
+        content = content.replace(/{/, "");
+        content = content.replace(/}/, "");
+
+        const data = content.split(",");
+
+        let convertedString = "";
+
+        if (data.length > 0) {
+          data.forEach((line, index) => {
+            if (!line) {
+              return;
+            }
+
+            line = line.replace("\n", "");
+            const split = line.split(":");
+            let [styleProp, styleValue] = split;
+
+            styleProp = split[0].replace(/ /g, "");
+            const rex = /[A-Z]/g;
+
+            const match = rex.exec(styleProp);
+            if (!!match) {
+              styleProp = styleProp.toLowerCase();
+              const splitProp = styleProp.split("");
+              styleProp = `${splitProp
+                .slice(0, match.index)
+                .join("")}-${splitProp.slice(match.index).join("")}`;
+            }
+
+            styleValue = `${styleValue.replace(/'/g, "")}`;
+            const finalString = `${styleProp}:${styleValue};`;
+            convertedString = `${convertedString}${finalString} ${
+              index === data.length - 1 ? "" : "\n"
+            }`;
+          });
+          a.value = convertedString;
+        }
+      });
+
+      b.addEventListener("click", () => {
+        const content = a.value;
+        const data = content.split("\n");
+
+        let convertedString = "{";
+
+        data.forEach((line, index) => {
+          if (!line) {
+            return;
+          }
+          const split = line.split(":");
+          let [styleProp, styleValue] = split;
+          console.log(styleProp, styleValue);
+
+          styleProp = split[0].replace(/ /g, "");
+          const indexOfDash = styleProp.indexOf("-");
+
+          if (indexOfDash > 0) {
+            const splitProperty = styleProp.split("");
+            splitProperty[indexOfDash + 1] = splitProperty[
+              indexOfDash + 1
+            ].toUpperCase();
+            styleProp = splitProperty.join("");
+          }
+          styleProp = styleProp.replace(/-/g, "");
+
+          styleValue = styleValue.replace(";", "");
+          styleValue = styleValue.replace(/ /g, "");
+
+          if (isNaN(styleValue)) {
+            styleValue = `'${styleValue}'`;
+          }
+
+          const final = `${styleProp}:${styleValue}${
+            index === data.length - 1 ? "" : ","
+          }`;
+          convertedString = convertedString + final;
+        });
+
+        convertedString = convertedString + "}";
+
+        b.value = convertedString;
+      });
+    </script>
+  </body>
+</html>
